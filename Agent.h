@@ -3,6 +3,7 @@
 #define AGENT_H
 #include <iostream>
 #include <vector>
+#include <ctime>
 using namespace std;
 const int SizeScene = 800;
 static double x_a = rand() / double(RAND_MAX) * SizeScene;
@@ -18,7 +19,7 @@ public:
 								//
 	double angle;				// angle of speed vector
 	double speed;				// speed of agent
-	double range = 50;			// range of audibility
+	double range = 40;			// range of audibility
 								//
 	int Acounter;				// counters;
 	int Bcounter;				//

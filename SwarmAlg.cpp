@@ -43,6 +43,8 @@ void Init()
 }
 int main(int argc, char* argv[])
 {
+	srand(time(0));
+
 	// swarm init
 	for (size_t i = 0; i < swarm.size(); i++) 
 		swarm[i] = new Agent();
