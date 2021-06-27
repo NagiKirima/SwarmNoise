@@ -1,7 +1,5 @@
 #include "Agent.h"
 using namespace std;
-
-double const pi = 3.14159265358979323846;
 int start = 200;
 
 Agent::Agent() 
@@ -9,13 +7,13 @@ Agent::Agent()
 	x = rand() / double(RAND_MAX) * SizeScene;				// rand coords (0..scenesize)
 	y = rand() / double(RAND_MAX) * SizeScene;				//
 	angle = rand() / double(RAND_MAX) * 2 * pi;				// rand vector of speed
-	speed = rand() / double(RAND_MAX) * 1.5 + 0.5;			// speed range 
-	Acounter = rand() % (SizeScene - start) + start; 		// rand range to nodes
-	Bcounter = rand() % (SizeScene - start) + start;		//
+	speed = rand() / double(RAND_MAX) * 3;					// speed range 
+	Acounter = SizeScene;							 		// rand range to nodes
+	Bcounter = SizeScene;									//
 	node_of_arrive = rand() % 2;							// rand target of travel
 }
 
-void Agent::Iteration(vector<Agent*>& list)
+void Agent::Iteration(vector<Agent*>& list, double rand)
 {
 	Acounter++;												// inc counters
 	Bcounter++;
@@ -27,7 +25,7 @@ void Agent::Iteration(vector<Agent*>& list)
 
 	x += cos(angle) * speed;								// rotate in world
 	y += sin(angle) * speed;
-	angle += (-1 + rand() % 2) * pi / (rand() % 500 + 100);
+	angle += rand;
 
 	// if curent coords == coords of node:
 	if (((x - x_a) * (x - x_a) + (y - y_a) * (y - y_a)) <= radius * radius)
@@ -37,7 +35,6 @@ void Agent::Iteration(vector<Agent*>& list)
 		{
 			node_of_arrive = 1;
 			angle += pi;
-			Noise(list);
 		}
 	}
 	if (((x - x_b) * (x - x_b) + (y - y_b) * (y - y_b)) <= radius * radius)
@@ -47,10 +44,9 @@ void Agent::Iteration(vector<Agent*>& list)
 		{
 			node_of_arrive = 0;
 			angle += pi;
-			Noise(list);
 		}
 	}
-	//Noise(list);
+	Noise(list);
 	Ear(list);
 }
 
@@ -58,29 +54,52 @@ void Agent::Noise(vector<Agent*> &list)
 {
 	int rangeToA = Acounter + range;
 	int rangeToB = Bcounter + range;
+	int dy = 0;
 	for (size_t i = 0; i < list.size(); i++) 
 	{
 		if (this != list[i]) 
 			if (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range)
 			{
+				// all factor of shifts
+				double shift_angle = 0;
+				if (this->y > list[i]->y && this->x > list[i]->x) 
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+				}
+				else if ((this->y < list[i]->y && this->x < list[i]->x))
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+				}
+				else if ((this->y < list[i]->y && this->x > list[i]->x)) 
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+				}
+				else if ((this->y > list[i]->y && this->x < list[i]->x)) 
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+				}
+
 				if (rangeToA < list[i]->Acounter)
 				{
 					list[i]->Acounter = rangeToA;
-					if (list[i]->node_of_arrive == 0) 
-						list[i]->angle = atan((this->x - list[i]->x)/(this->y - list[i]->y));
+					if (list[i]->node_of_arrive == 0)
+					{
+						list[i]->angle = shift_angle;
+					}
 				}
 				if (rangeToB < list[i]->Bcounter)
 				{
 					list[i]->Bcounter = rangeToB;
 					if (list[i]->node_of_arrive == 1)
-						list[i]->angle = atan((this->x - list[i]->x) / (this->y - list[i]->y));
+					{
+						list[i]->angle = shift_angle;
+					}
 				}
 			}
 	}
 }
 void Agent::Ear(vector<Agent*>& list) 
 {
-
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (this != list[i])
@@ -89,17 +108,39 @@ void Agent::Ear(vector<Agent*>& list)
 			int rangeToB = list[i]->Bcounter + range;
 			if (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range)
 			{
+				// all factor of shifts
+				double shift_angle = 0;
+				if (this->y > list[i]->y && this->x > list[i]->x)
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+				}
+				else if ((this->y < list[i]->y && this->x < list[i]->x))
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+				}
+				else if ((this->y < list[i]->y && this->x > list[i]->x))
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+				}
+				else if ((this->y > list[i]->y && this->x < list[i]->x))
+				{
+					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+				}
 				if (this->Acounter > rangeToA)
 				{
 					this->Acounter = rangeToA;
 					if (this->node_of_arrive == 0)
-						this->angle = atan((list[i]->x - this->x) / (list[i]->y - this->y));
+					{
+						this->angle = shift_angle;
+					}
 				}
 				if (this->Bcounter > rangeToB)
 				{
 					this->Bcounter = rangeToB;
 					if (list[i]->node_of_arrive == 1)
-						list[i]->angle = atan((list[i]->x - this->x) / (list[i]->y - this->y));
+					{
+						this->angle = shift_angle;
+					}
 				}
 			}
 		}
