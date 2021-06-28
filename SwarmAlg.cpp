@@ -4,7 +4,7 @@
 #include "glut.h"
 using namespace std;
 const int WINDOW_SIZE = 800;
-vector<Agent*> swarm(800);
+vector<Agent*> swarm(1000);
 vector<Node*> listOfNodes;
 void Draw()
 {
@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < swarm.size(); i++)
 		swarm[i] = new Agent();
 	
-	// nodes list init
-	int size = rand() % 9 + 2;
+	// nodes list init (random)
+	/*int size = rand() % 9 + 2;
 	Node* p = 0;
 	p = new Node(2, rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX)* SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene); // base;
 	listOfNodes.push_back(p);
@@ -65,23 +65,19 @@ int main(int argc, char* argv[])
 	{
 		p = new Node(rand() % (types - 1), rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene);
 		listOfNodes.push_back(p);
-	}
+	}*/
 
-	/*for (auto i : listOfNodes)
-		cout << i->type << " ";
-	cout << endl;
-	vector<int> buffer(3,0);
-	for (int i = 0; i < swarm.size(); i++) 
-	{
-		if (swarm[i]->node_of_arrive == 0)
-			buffer[0]++;
-		if (swarm[i]->node_of_arrive == 1)
-			buffer[1]++;
-		if (swarm[i]->node_of_arrive == 2)
-			buffer[2]++;
-	}
-	for (auto i : buffer)
-		cout << i << endl;*/
+	// nodes list init (example)
+	
+	Node* p = 0;
+	p = new Node(2, 25, 25);  // base
+	listOfNodes.push_back(p);
+	p = new Node(0, 775, 25); // 1-type
+	listOfNodes.push_back(p);
+	p = new Node(1, 400, 775); // 2-type
+	listOfNodes.push_back(p);
+
+	
 
 	// window init
 	glutInit(&argc, argv);
