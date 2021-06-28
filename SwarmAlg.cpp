@@ -4,8 +4,8 @@
 #include "glut.h"
 using namespace std;
 const int WINDOW_SIZE = 800;
-vector<Agent*> swarm(1000);
-
+vector<Agent*> swarm(800);
+vector<Node*> listOfNodes;
 void Draw()
 {
 	srand(time(0));
@@ -13,7 +13,7 @@ void Draw()
 	for (size_t i = 0; i < swarm.size(); i++)
 	{
 		double change_angle = rand() / double(RAND_MAX) * 0.01 * pi * (-1 + rand() % 2);
-		swarm[i]->Iteration(swarm, change_angle);
+		swarm[i]->Iteration(swarm, listOfNodes, change_angle);
 	}
 	glPointSize(2);
 	glBegin(GL_POINTS);
@@ -23,10 +23,16 @@ void Draw()
 	glEnd();
 	glPointSize(radius);
 	glBegin(GL_POINTS);
-		glColor3f(0, 0, 100);
-		glVertex2f(x_a, y_a);
-		glColor3f(0, 100, 0);
-		glVertex2f(x_b, y_b);
+		for (auto &i : listOfNodes) 
+		{
+			if(i->type == 2)
+				glColor3f(100, 0, 0); // base
+			else if(i->type == 1)
+				glColor3f(0, 100, 0); // blue
+			else
+				glColor3f(0, 0, 100); // green
+			glVertex2f(i->x, i->y);
+		}
 	glEnd();
 	glutSwapBuffers();
 	
@@ -46,34 +52,36 @@ void Init()
 int main(int argc, char* argv[])
 {
 	srand(time(0));
-	//x_a = rand() / double(RAND_MAX) * SizeScene;
-	//y_a = rand() / double(RAND_MAX) * SizeScene;
-	//x_b = rand() / double(RAND_MAX) * SizeScene;
-	//y_b = rand() / double(RAND_MAX) * SizeScene;
 	// swarm init
 	for (size_t i = 0; i < swarm.size(); i++)
 		swarm[i] = new Agent();
-
-	int Acount = 0, Bcount = 0;
-	for (auto i : swarm) 
+	
+	// nodes list init
+	int size = rand() % 9 + 2;
+	Node* p = 0;
+	p = new Node(2, rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX)* SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene); // base;
+	listOfNodes.push_back(p);
+	for (size_t i = 1; i < size; i++)
 	{
-		if (i->node_of_arrive == 0)
-			Acount++;
-		else
-			Bcount++;
+		p = new Node(rand() % (types - 1), rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene);
+		listOfNodes.push_back(p);
 	}
-	cout << "A:" << Acount << endl << "B:" << Bcount << endl;
-	//for (size_t i = 0; i < swarm.size(); i++) 
-	//{
-	//	swarm[i]->x = rand() / double(RAND_MAX) * SizeScene;				// rand coords (0..scenesize)
-	//	swarm[i]->y = rand() / double(RAND_MAX) * SizeScene;				//
-	//	swarm[i]->angle = rand() / double(RAND_MAX) * 2 * pi;				// rand vector of speed
-	//	swarm[i]->speed = rand() / double(RAND_MAX) * 3;			// speed range 
-	//	swarm[i]->Acounter = rand() % (SizeScene - start) + start; 		// rand range to nodes
-	//	swarm[i]->Bcounter = rand() % (SizeScene - start) + start;		//
-	//	swarm[i]->node_of_arrive = rand() % 2;							// rand target of travel
-	//}
 
+	/*for (auto i : listOfNodes)
+		cout << i->type << " ";
+	cout << endl;
+	vector<int> buffer(3,0);
+	for (int i = 0; i < swarm.size(); i++) 
+	{
+		if (swarm[i]->node_of_arrive == 0)
+			buffer[0]++;
+		if (swarm[i]->node_of_arrive == 1)
+			buffer[1]++;
+		if (swarm[i]->node_of_arrive == 2)
+			buffer[2]++;
+	}
+	for (auto i : buffer)
+		cout << i << endl;*/
 
 	// window init
 	glutInit(&argc, argv);
@@ -85,7 +93,11 @@ int main(int argc, char* argv[])
 	glutTimerFunc(10, Timer, 0);
 	Init();
 	glutMainLoop();
+
+	//clear memory
 	for (size_t i = 0; i < swarm.size(); i++)
 		delete swarm[i];
+	for (size_t i = 0; i < listOfNodes.size(); i++)
+		delete listOfNodes[i];
 }
 

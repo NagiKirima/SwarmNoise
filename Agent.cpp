@@ -1,148 +1,95 @@
 #include "Agent.h"
 using namespace std;
-int start = 200;
 
-Agent::Agent() 
+Agent::Agent()
 {
 	x = rand() / double(RAND_MAX) * SizeScene;				// rand coords (0..scenesize)
 	y = rand() / double(RAND_MAX) * SizeScene;				//
 	angle = rand() / double(RAND_MAX) * 2 * pi;				// rand vector of speed
-	speed = rand() / double(RAND_MAX) * 3;					// speed range 
-	Acounter = SizeScene;							 		// rand range to nodes
-	Bcounter = SizeScene;									//
-	node_of_arrive = rand() % 2;							// rand target of travel
+	speed = rand() / double(RAND_MAX) * 3;
+	node_of_arrive = rand() % types;						// rand type of arrive
+	counters.assign(types, SizeScene);
 }
 
-void Agent::Iteration(vector<Agent*>& list, double rand)
+void Agent::Iteration(vector<Agent*>& list, vector<Node*>& listOfNodes, double Rand)
 {
-	Acounter++;												// inc counters
-	Bcounter++;
+	for (auto& i : counters)								//increase all counters
+		i++;
 
-	// check the walls
-	if (x + cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene || y + sin(angle) * speed >= SizeScene)
+	//checking the walls
+	if (x + cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene 
+		|| y + sin(angle) * speed >= SizeScene)				
 		angle += pi;
 
-
-	x += cos(angle) * speed;								// rotate in world
+	x += cos(angle) * speed;								// rotating in world
 	y += sin(angle) * speed;
-	angle += rand;
+	angle += Rand;
 
-	// if curent coords == coords of node:
-	if (((x - x_a) * (x - x_a) + (y - y_a) * (y - y_a)) <= radius * radius)
+	for (int i = 0; i < listOfNodes.size(); i++)
 	{
-		Acounter = 0;
-		if (node_of_arrive == 0)
+		if (pow(x - listOfNodes[i]->x, 2) + pow(y - listOfNodes[i]->y, 2) <= pow(listOfNodes[i]->radius, 2))
 		{
-			node_of_arrive = 1;
-			angle += pi;
-		}
-	}
-	if (((x - x_b) * (x - x_b) + (y - y_b) * (y - y_b)) <= radius * radius)
-	{
-		Bcounter = 0;
-		if (node_of_arrive == 1)
-		{
-			node_of_arrive = 0;
-			angle += pi;
-		}
-	}
-	Noise(list);
-	Ear(list);
-}
+			counters[listOfNodes[i]->type] = 0;
+			//if (node_of_arrive == listOfNodes[i].type)      //testing, mb correct
+				//angle += pi;
 
-void Agent::Noise(vector<Agent*> &list) 
-{
-	int rangeToA = Acounter + range;
-	int rangeToB = Bcounter + range;
-	int dy = 0;
-	for (size_t i = 0; i < list.size(); i++) 
-	{
-		if (this != list[i]) 
-			if (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range)
+			//random choise after finded needed node
+			if (listOfNodes[i]->type == types - 1 && listOfNodes[i]->type == node_of_arrive)
 			{
-				// all factor of shifts
-				double shift_angle = 0;
-				if (this->y > list[i]->y && this->x > list[i]->x) 
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
-				}
-				else if ((this->y < list[i]->y && this->x < list[i]->x))
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
-				}
-				else if ((this->y < list[i]->y && this->x > list[i]->x)) 
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
-				}
-				else if ((this->y > list[i]->y && this->x < list[i]->x)) 
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
-				}
-
-				if (rangeToA < list[i]->Acounter)
-				{
-					list[i]->Acounter = rangeToA;
-					if (list[i]->node_of_arrive == 0)
-					{
-						list[i]->angle = shift_angle;
-					}
-				}
-				if (rangeToB < list[i]->Bcounter)
-				{
-					list[i]->Bcounter = rangeToB;
-					if (list[i]->node_of_arrive == 1)
-					{
-						list[i]->angle = shift_angle;
-					}
-				}
+				node_of_arrive = rand() % 2;
 			}
+			else if (listOfNodes[i]->type == node_of_arrive)
+			{
+				int r = node_of_arrive;
+				while (r == node_of_arrive)
+				{
+					r = rand() % types;
+				}
+				node_of_arrive = r;
+			}
+		}
 	}
+	Noise(list, listOfNodes);
 }
-void Agent::Ear(vector<Agent*>& list) 
+
+void Agent::Noise(vector<Agent*> &list, vector<Node*>& listOfNodes)
 {
+	//init rangelist
+	vector<int> rangelist;
+	for (auto i : counters)
+		rangelist.push_back(i + range);
+
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (this != list[i])
-		{
-			int rangeToA = list[i]->Acounter + range;
-			int rangeToB = list[i]->Bcounter + range;
-			if (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range)
+			for (size_t j = 0; j < rangelist.size(); j++)
 			{
-				// all factor of shifts
-				double shift_angle = 0;
-				if (this->y > list[i]->y && this->x > list[i]->x)
+				if (rangelist[j] < list[i]->counters[j] && (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range))
 				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
-				}
-				else if ((this->y < list[i]->y && this->x < list[i]->x))
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
-				}
-				else if ((this->y < list[i]->y && this->x > list[i]->x))
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
-				}
-				else if ((this->y > list[i]->y && this->x < list[i]->x))
-				{
-					shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
-				}
-				if (this->Acounter > rangeToA)
-				{
-					this->Acounter = rangeToA;
-					if (this->node_of_arrive == 0)
+					list[i]->counters[j] = rangelist[j];
+					if (node_of_arrive == list[i]->node_of_arrive)
 					{
-						this->angle = shift_angle;
-					}
-				}
-				if (this->Bcounter > rangeToB)
-				{
-					this->Bcounter = rangeToB;
-					if (list[i]->node_of_arrive == 1)
-					{
-						this->angle = shift_angle;
+						//rotating towards noise 
+						double shift_angle = 0;
+						if (this->y > list[i]->y && this->x > list[i]->x)
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y < list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						else if ((this->y < list[i]->y && this->x > list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y > list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						list[i]->angle = shift_angle;
 					}
 				}
 			}
-		}
 	}
 }
