@@ -4,17 +4,27 @@
 #include "glut.h"
 using namespace std;
 const int WINDOW_SIZE = 800;
-vector<Agent*> swarm(1000);
+vector<Agent*> swarm;
 vector<Node*> listOfNodes;
 void Draw()
 {
-	srand(time(0));
+	time_t* a = new time_t();
+	srand(time(a));
+	delete a;
 	glClear(GL_COLOR_BUFFER_BIT);
+	// iterations
+	for (size_t i = 0; i < listOfNodes.size(); i++)
+	{
+		double change_angle = rand() / double(RAND_MAX) * 0.5 * pi * (-1 + rand() % 2);
+		listOfNodes[i]->Iteration(change_angle);
+	}
 	for (size_t i = 0; i < swarm.size(); i++)
 	{
 		double change_angle = rand() / double(RAND_MAX) * 0.01 * pi * (-1 + rand() % 2);
 		swarm[i]->Iteration(swarm, listOfNodes, change_angle);
 	}
+
+	// drawing world
 	glPointSize(2);
 	glBegin(GL_POINTS);
 		glColor3f(255, 255, 255);
@@ -34,8 +44,8 @@ void Draw()
 			glVertex2f(i->x, i->y);
 		}
 	glEnd();
+
 	glutSwapBuffers();
-	
 }
 void Timer(int) 
 {
@@ -47,41 +57,65 @@ void Init()
 	glClearColor(0, 0, 0, 0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, SizeScene, 0, SizeScene, -5, 5);
+	glOrtho(0, SizeScene, 0, SizeScene, -1, 1);
+}
+size_t GetSwarmSize() 
+{
+	size_t size;
+	while (!(cin >> size) || (cin.peek() != '\n') || size < 500 || size > 2000)
+	{
+		cin.clear();
+		while (cin.get() != '\n');
+		cout << "Введите корректное число:\t";
+	}
+	return size;
+}
+size_t GetCitySize()
+{
+	size_t size;
+	while (!(cin >> size) || (cin.peek() != '\n') || size < 3 || size > 5)
+	{
+		cin.clear();
+		while (cin.get() != '\n');
+		cout << "Введите корректное число:\t";
+	}
+	return size;
 }
 int main(int argc, char* argv[])
 {
+	system("color 06");
 	srand(time(0));
+	setlocale(LC_ALL, "rus");
+
 	// swarm init
-	for (size_t i = 0; i < swarm.size(); i++)
-		swarm[i] = new Agent();
-	
-	// nodes list init (random)
-	/*int size = rand() % 9 + 2;
-	Node* p = 0;
-	p = new Node(2, rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX)* SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene); // base;
-	listOfNodes.push_back(p);
-	for (size_t i = 1; i < size; i++)
+	cout << "Введите размер роя, влияет на производительность и на скорость нахождения оптимального пути (500...2000)" << endl;
+	size_t tempsize = GetSwarmSize();
+	for (size_t i = 0; i < tempsize; i++) 
 	{
-		p = new Node(rand() % (types - 1), rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene, radius, 0.005, rand() / double(RAND_MAX) * SizeScene);
-		listOfNodes.push_back(p);
-	}*/
+		Agent* p = new Agent();
+		swarm.push_back(p);
+	}
 
-	// nodes list init (example)
-	
+	// nodes init
+	cout << "Введите коичество городов, тип города определяется случайно (3..5)" << endl;
+	tempsize = GetCitySize();
 	Node* p = 0;
-	p = new Node(2, 25, 25);  // base
+	p = new Node(2, 200, 200);  // base
 	listOfNodes.push_back(p);
-	p = new Node(0, 775, 25); // 1-type
+	p = new Node(0, 600, 300); // first-type
 	listOfNodes.push_back(p);
-	p = new Node(1, 400, 775); // 2-type
+	p = new Node(1, 400, 500); // second-type
 	listOfNodes.push_back(p);
+	for (size_t i = 3; i < tempsize; i++) 
+	{
+		p = new Node(rand() % (types - 1) , rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene);
+		listOfNodes.push_back(p);
+	}
 
-	
 
 	// window init
 	glutInit(&argc, argv);
-	glutInitWindowPosition(50, 10);
+	glutInitWindowPosition(500, 100);
 	glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE); 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE); 
 	glutCreateWindow("Swarm"); 

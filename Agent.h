@@ -13,7 +13,7 @@ public:
 									//
 	double angle;					// angle of speed vector
 	double speed;					// speed of agent
-	double range = 50;					// range of audibility
+	double range = 50;				// range of audibility
 									
 	vector<int> counters;			// counterlist			
 	int node_of_arrive;				// arrive node

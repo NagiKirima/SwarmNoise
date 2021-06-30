@@ -30,15 +30,28 @@ void Agent::Iteration(vector<Agent*>& list, vector<Node*>& listOfNodes, double R
 		if (pow(x - listOfNodes[i]->x, 2) + pow(y - listOfNodes[i]->y, 2) <= pow(listOfNodes[i]->radius, 2))
 		{
 			counters[listOfNodes[i]->type] = 0;
-			//if (node_of_arrive == listOfNodes[i].type)      //testing, mb correct
-				//angle += pi;
+			//if (node_of_arrive == listOfNodes[i]->type)      //testing, mb correct
+			//	angle += pi;
 
 			//random choise after finded needed node
-			if (listOfNodes[i]->type == types - 1 && listOfNodes[i]->type == node_of_arrive)
-			{
-				node_of_arrive = rand() % 2;
-			}
-			else if (listOfNodes[i]->type == node_of_arrive)
+
+			//if (listOfNodes[i]->type == types - 1 && listOfNodes[i]->type == node_of_arrive)
+			//{
+			//	// return to rand resources node
+			//	node_of_arrive = rand() % (types - 1);
+			//}
+			//else if (listOfNodes[i]->type == node_of_arrive)
+			//{
+			//	/*int r = node_of_arrive;
+			//	while (r == node_of_arrive)
+			//	{
+			//		r = rand() % types;
+			//	}
+			//	node_of_arrive = r;*/
+			//	// return to base node
+			//	node_of_arrive = types - 1;
+			//}
+			if (listOfNodes[i]->type == node_of_arrive) 
 			{
 				int r = node_of_arrive;
 				while (r == node_of_arrive)

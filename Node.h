@@ -22,7 +22,7 @@ public:
 	double y;
 	int type;
 	double radius = 25;
-	double speed = 0.05;
+	double speed = 0.25;
 	double angle;
 	Node()
 	{
@@ -40,6 +40,22 @@ public:
 		radius = R;
 		speed = V;
 		angle = Ang;
+	}
+	void Iteration(double Rand) 
+	{
+		if (x +  cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene
+			|| y + sin(angle) * speed >= SizeScene) 
+		{
+			angle = angle + pi;
+			x += cos(angle) * speed;
+			y += sin(angle) * speed;
+		}
+		else 
+		{
+			x += cos(angle) * speed;
+			y += sin(angle) * speed;
+			angle += Rand;
+		}
 	}
 };
 //static vector<Node> listOfNodes = { Node(0, x_a, y_a), Node(1, x_b, y_b), Node(2, x_c, y_c) };
