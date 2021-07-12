@@ -8,9 +8,7 @@ vector<Agent*> swarm;
 vector<Node*> listOfNodes;
 void Draw()
 {
-	time_t* a = new time_t();
-	srand(time(a));
-	delete a;
+	srand(time(0));
 	glClear(GL_COLOR_BUFFER_BIT);
 	// iterations
 	for (size_t i = 0; i < listOfNodes.size(); i++)
@@ -23,20 +21,26 @@ void Draw()
 		double change_angle = rand() / double(RAND_MAX) * 0.01 * pi * (-1 + rand() % 2);
 		swarm[i]->Iteration(swarm, listOfNodes, change_angle);
 	}
-
 	// drawing world
 	glPointSize(2);
 	glBegin(GL_POINTS);
-		glColor3f(255, 255, 255);
 		for (size_t i = 0; i < swarm.size(); i++)
+		{
+			if (swarm[i]->node_of_arrive == 2)
+				glColor3f(100, 0, 0); // red
+			else if (swarm[i]->node_of_arrive == 1)
+				glColor3f(0, 100, 0); // blue
+			else
+				glColor3f(0, 0, 100); // green
 			glVertex2f(swarm[i]->x, swarm[i]->y);
+		}
 	glEnd();
 	glPointSize(radius);
 	glBegin(GL_POINTS);
 		for (auto &i : listOfNodes) 
 		{
 			if(i->type == 2)
-				glColor3f(100, 0, 0); // base
+				glColor3f(100, 0, 0); // red
 			else if(i->type == 1)
 				glColor3f(0, 100, 0); // blue
 			else
@@ -44,7 +48,6 @@ void Draw()
 			glVertex2f(i->x, i->y);
 		}
 	glEnd();
-
 	glutSwapBuffers();
 }
 void Timer(int) 
@@ -70,10 +73,10 @@ size_t GetSwarmSize()
 	}
 	return size;
 }
-size_t GetCitySize()
+double GetNoise()
 {
-	size_t size;
-	while (!(cin >> size) || (cin.peek() != '\n') || size < 3 || size > 5)
+	double size;
+	while (!(cin >> size) || (cin.peek() != '\n') || size < 20 || size > 50)
 	{
 		cin.clear();
 		while (cin.get() != '\n');
@@ -90,28 +93,20 @@ int main(int argc, char* argv[])
 	// swarm init
 	cout << "Введите размер роя, влияет на производительность и на скорость нахождения оптимального пути (500...2000)" << endl;
 	size_t tempsize = GetSwarmSize();
+	cout << "Введите радиус крика - влияет на скорость нахождения решения (20...50)" << endl;
+	double noise = GetNoise();
+
 	for (size_t i = 0; i < tempsize; i++) 
 	{
-		Agent* p = new Agent();
+		Agent* p = new Agent(noise);
 		swarm.push_back(p);
 	}
-
 	// nodes init
-	cout << "Введите коичество городов, тип города определяется случайно (3..5)" << endl;
-	tempsize = GetCitySize();
-	Node* p = 0;
-	p = new Node(2, 200, 200);  // base
-	listOfNodes.push_back(p);
-	p = new Node(0, 600, 300); // first-type
-	listOfNodes.push_back(p);
-	p = new Node(1, 400, 500); // second-type
-	listOfNodes.push_back(p);
-	for (size_t i = 3; i < tempsize; i++) 
+	for (size_t i = 0; i < types; i++)
 	{
-		p = new Node(rand() % (types - 1) , rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene);
+		Node* p = new Node(i, rand() / double(RAND_MAX) * SizeScene, rand() / double(RAND_MAX) * SizeScene);
 		listOfNodes.push_back(p);
 	}
-
 
 	// window init
 	glutInit(&argc, argv);

@@ -19,6 +19,7 @@ public:
 	int node_of_arrive;				// arrive node
 
 	Agent();
+	Agent(double range);
 	virtual void Iteration(vector<Agent*>& list, vector<Node*> &listOfNodes, double Rand);
 	void Noise(vector<Agent*> &list, vector<Node*>& listOfNodes);
 };

@@ -6,12 +6,6 @@
 using namespace std;
 const int SizeScene = 800;
 static int types = 3;
-static double x_a = 200;
-static double y_a = 200;
-static double x_b = 500;
-static double y_b = 400;
-static double x_c = 400;
-static double y_c = 700;
 static const double radius = 25;
 static double const pi = 3.14159265358979323846;
 
@@ -41,16 +35,16 @@ public:
 		speed = V;
 		angle = Ang;
 	}
-	void Iteration(double Rand) 
+	void Iteration(double Rand)
 	{
-		if (x +  cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene
-			|| y + sin(angle) * speed >= SizeScene) 
+		if (x + cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene
+			|| y + sin(angle) * speed >= SizeScene)
 		{
 			angle = angle + pi;
 			x += cos(angle) * speed;
 			y += sin(angle) * speed;
 		}
-		else 
+		else
 		{
 			x += cos(angle) * speed;
 			y += sin(angle) * speed;
@@ -58,4 +52,3 @@ public:
 		}
 	}
 };
-//static vector<Node> listOfNodes = { Node(0, x_a, y_a), Node(1, x_b, y_b), Node(2, x_c, y_c) };

@@ -10,56 +10,58 @@ Agent::Agent()
 	node_of_arrive = rand() % types;						// rand type of arrive
 	counters.assign(types, SizeScene);
 }
-
+Agent::Agent(double noise) : Agent()
+{
+	range = noise;
+}
 void Agent::Iteration(vector<Agent*>& list, vector<Node*>& listOfNodes, double Rand)
 {
 	for (auto& i : counters)								//increase all counters
 		i++;
-
-	//checking the walls
-	if (x + cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene 
-		|| y + sin(angle) * speed >= SizeScene)				
+	// check the walls
+	if (x + cos(angle) * speed <= 0 || y + sin(angle) * speed <= 0 || x + cos(angle) * speed >= SizeScene || y + sin(angle) * speed >= SizeScene)
 		angle += pi;
 
-	x += cos(angle) * speed;								// rotating in world
+
+	x += cos(angle) * speed;								// rotate in world
 	y += sin(angle) * speed;
 	angle += Rand;
 
-	for (int i = 0; i < listOfNodes.size(); i++)
+	// if curent coords == coords of node:
+	if (((x - listOfNodes[0]->x) * (x - listOfNodes[0]->x) + (y - listOfNodes[0]->y) * (y - listOfNodes[0]->y)) <= listOfNodes[0]->radius)
 	{
-		if (pow(x - listOfNodes[i]->x, 2) + pow(y - listOfNodes[i]->y, 2) <= pow(listOfNodes[i]->radius, 2))
+		counters[0] = 0;
+		if (node_of_arrive == 0)
 		{
-			counters[listOfNodes[i]->type] = 0;
-			//if (node_of_arrive == listOfNodes[i]->type)      //testing, mb correct
-			//	angle += pi;
-
-			//random choise after finded needed node
-
-			//if (listOfNodes[i]->type == types - 1 && listOfNodes[i]->type == node_of_arrive)
-			//{
-			//	// return to rand resources node
-			//	node_of_arrive = rand() % (types - 1);
-			//}
-			//else if (listOfNodes[i]->type == node_of_arrive)
-			//{
-			//	/*int r = node_of_arrive;
-			//	while (r == node_of_arrive)
-			//	{
-			//		r = rand() % types;
-			//	}
-			//	node_of_arrive = r;*/
-			//	// return to base node
-			//	node_of_arrive = types - 1;
-			//}
-			if (listOfNodes[i]->type == node_of_arrive) 
-			{
-				int r = node_of_arrive;
-				while (r == node_of_arrive)
-				{
-					r = rand() % types;
-				}
-				node_of_arrive = r;
-			}
+			int r = node_of_arrive;
+			while (r == node_of_arrive)
+				r = rand() % types;
+			node_of_arrive = r;
+			angle += pi;
+		}
+	}
+	if (((x - listOfNodes[1]->x) * (x - listOfNodes[1]->x) + (y - listOfNodes[1]->y) * (y - listOfNodes[1]->y)) <= listOfNodes[1]->radius)
+	{
+		counters[1] = 0;
+		if (node_of_arrive == 1)
+		{
+			int r = node_of_arrive;
+			while (r == node_of_arrive)
+				r = rand() % types;
+			node_of_arrive = r;
+			angle += pi;
+		}
+	}
+	if (((x - listOfNodes[2]->x) * (x - listOfNodes[2]->x) + (y - listOfNodes[2]->y) * (y - listOfNodes[2]->y)) <= listOfNodes[2]->radius)
+	{
+		counters[2] = 0;
+		if (node_of_arrive == 2)
+		{
+			int r = node_of_arrive;
+			while (r == node_of_arrive)
+				r = rand() % types;
+			node_of_arrive = r;
+			angle += pi;
 		}
 	}
 	Noise(list, listOfNodes);
@@ -67,22 +69,71 @@ void Agent::Iteration(vector<Agent*>& list, vector<Node*>& listOfNodes, double R
 
 void Agent::Noise(vector<Agent*> &list, vector<Node*>& listOfNodes)
 {
-	//init rangelist
-	vector<int> rangelist;
-	for (auto i : counters)
-		rangelist.push_back(i + range);
+	int rangeToA = counters[0] + range;
+	int rangeToB = counters[1] + range;
+	int rangeToC = counters[2] + range;
 
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (this != list[i])
-			for (size_t j = 0; j < rangelist.size(); j++)
+			if (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range)
 			{
-				if (rangelist[j] < list[i]->counters[j] && (pow(this->x - list[i]->x, 2) + pow(this->y - list[i]->y, 2) <= range * range))
+
+				if (rangeToA < list[i]->counters[0])
 				{
-					list[i]->counters[j] = rangelist[j];
-					if (node_of_arrive == list[i]->node_of_arrive)
+					list[i]->counters[0] = rangeToA;
+					if (list[i]->node_of_arrive == 0)
 					{
-						//rotating towards noise 
+						double shift_angle = 0;
+						if (this->y > list[i]->y && this->x > list[i]->x)
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y < list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						else if ((this->y < list[i]->y && this->x > list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y > list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						list[i]->angle = shift_angle;
+					}
+				}
+				if (rangeToB < list[i]->counters[1])
+				{
+					list[i]->counters[1] = rangeToB;
+					if (list[i]->node_of_arrive == 1)
+					{
+						double shift_angle = 0;
+						if (this->y > list[i]->y && this->x > list[i]->x)
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y < list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						else if ((this->y < list[i]->y && this->x > list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x));
+						}
+						else if ((this->y > list[i]->y && this->x < list[i]->x))
+						{
+							shift_angle = atan((this->y - list[i]->y) / (this->x - list[i]->x)) + pi;
+						}
+						list[i]->angle = shift_angle;
+					}
+				}
+				if (rangeToC < list[i]->counters[2])
+				{
+					list[i]->counters[2] = rangeToC;
+					if (list[i]->node_of_arrive == 2)
+					{
 						double shift_angle = 0;
 						if (this->y > list[i]->y && this->x > list[i]->x)
 						{
